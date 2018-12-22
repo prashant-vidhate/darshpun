@@ -8,6 +8,8 @@ class User extends CI_Controller
         //$this->load->helper(array('url', 'form', 'string'));
         //$this->load->library(array('session', 'form_validation', 'email'));
         $this->load->model('userModel');
+
+        //$joining_amount = 10000;
     }
 
     public function HomePage()
@@ -17,6 +19,9 @@ class User extends CI_Controller
 
     public function registerUser()
     {
+
+        $joining_amount = 10000;
+
         $sponserId = $_POST['sponsorId'];
         $placementId = $_POST['placementId'];
         $placementPosition = $_POST['placementPosition'];
@@ -61,6 +66,35 @@ class User extends CI_Controller
             $password
         );
 
+        if ($newUsername != null) {
+            $total_profit = $joining_amount * 0.05;
+            $user_list = $this->userModel->getAllUserByActiveAndDeleted('ACTIVE', 'false');
+            $countOfUsers = sizeof($user_list);
+            $profit = $total_profit / $countOfUsers;
+            foreach ($user_list as $user) {
+                $userWallet = $this->userModel->getUserWalletByUserId($user->id);
+                if ($userWallet != null) {
+                    // users wallet's profit sharing value should not be zero
+                    if($userWallet->profit_sharing_value != 0) {
+                        $profit_value = $userWallet->profit_sharing_value - $profit;
+                        if($profit_value >= 0) {
+                            $userWallet->profit_sharing_value = $profit_value;
+                            $userWallet->daily_profit = $userWallet->daily_profit + $profit;
+                        } else {
+                            $userWallet->daily_profit = $userWallet->daily_profit + $userWallet->profit_sharing_value;
+                            $userWallet->profit_sharing_value = 0;
+                        }
+                        $this->userModel->updateUserWallet($userWallet);
+                    }
+                    
+                } else {
+                    // $this->userModel->saveUserWallet($user->id);
+                }
+            }
+        } else {
+            # User not registered
+        }
+
         redirect('User/RegisterSummary/' . $newUsername);
     }
 
@@ -78,39 +112,51 @@ class User extends CI_Controller
 
     }
 
-    public function Dashboard() {
+    public function Dashboard()
+    {
         $username = $this->session->userdata("user_username");
+        $user_id = $this->session->userdata("user_id");
         $userDetails = $this->userModel->getUserDetailsByUser($username);
-        if($userDetails) {
-            $userDetails->name = $userDetails->firstname.' '.$userDetails->middlename.' '.$userDetails->lastname;
+        if ($userDetails) {
+            $userDetails->name = $userDetails->firstname . ' ' . $userDetails->middlename . ' ' . $userDetails->lastname;
         }
         $data['userDetails'] = $userDetails;
-        $data['userTreeArray'] = $this->userModel->getUserByPlacementId(8);
+        $userWallet = $this->userModel->getUserWalletByUserId($user_id);
+        if($userWallet == null) {
+            $this->userModel->insertUserWalletDefault($user_id);
+            $userWallet = $this->userModel->getUserWalletByUserId($user_id);
+        } 
+        $data['userWallet'] = $userWallet;
         $this->load->view('User/UserDashboard', $data);
     }
 
-    public function Calender() {
+    public function Calender()
+    {
         $this->load->view('User/Calender');
     }
 
-    public function Logout() {
+    public function Logout()
+    {
         $this->session->unset_userdata("user_id");
         $this->session->unset_userdata("user_username");
         $this->session->unset_userdata("user_role");
         redirect('Home/HomePage');
     }
 
-    public function getUserTreeByPlacementId() {
+    public function getUserTreeByPlacementId()
+    {
         $user_id = $this->session->userdata("user_id");
         $userList = $this->userModel->getUserByPlacementId($user_id);
         $user = $this->userModel->getUserDetailsById($user_id);
-        if($user != null) {
+        if ($user != null) {
+            $user->placement_position = 'Root';
             array_push($userList, $user);
         }
         echo json_encode($userList);
     }
 
-    public function BinaryTree() {
+    public function BinaryTree()
+    {
         $this->load->view('User/BinaryTree');
     }
 

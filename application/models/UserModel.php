@@ -3,6 +3,7 @@
 class UserModel extends CI_Model 
 {   
 	function __CONSTRUCT() {
+		//$joining_amount = 10000;
 	}
 
 	public function getUserDetailsByUser($username) {
@@ -16,6 +17,8 @@ class UserModel extends CI_Model
 	public function registerUser($sponserId, $placementId, $placementPosition, $title, $firstName, $middleName, $lastName, $dob, $gender, $contact, $email, $pan, 
 		$location, $landmark, $city, $district, $state, $pincode, $country, $password) {
 			
+		$joining_amount = 10000;
+
 		// GENERATE USERNAME	
 		$digits = 6;
 		$generatedUsername = rand(pow(10, $digits-1), pow(10, $digits)-1);
@@ -25,8 +28,6 @@ class UserModel extends CI_Model
 		$sponserId = $this->getUserDetailsByUser($sponserId)->id;
 		$placementId = $this->getUserDetailsByUser($placementId)->id;
 
-		// $this->db->trans_begin();
-		
 		try {
 			// USER table entry
 			$data = array(
@@ -77,7 +78,7 @@ class UserModel extends CI_Model
 					'user_id'  => $user_id,
 					'shopping_fund' => 5000,
 					'profit_sharing_value' => 100000,
-					'deposited_profit_sharing_value' => 0,
+					'daily_profit' => 0,
 					'direct_referral_income' => 0,
 					'created_at' => date('Y-m-d h:i:sa')
 				);
@@ -88,18 +89,10 @@ class UserModel extends CI_Model
 					'sponser_id' => $user_id,
 					'newly_created_user_id' => $user_id,
 					'joining_date' =>date('Y-m-d h:i:sa'),
-					'joining_amount' => 10000,
+					'joining_amount' => $joining_amount,
 					'created_at' => date('Y-m-d h:i:sa')
 				);
 				$this->db->insert('joining_details',$joining_details_data);
-
-				// $this->db->trans_complete();
-
-				// if ($this->db->trans_status() === FALSE) {
-				// 	$this->db->trans_rollback();
-				// } else {
-				// 	$this->db->trans_commit();
-				// }
 
 				return $newUsername;
 			}
@@ -129,6 +122,39 @@ class UserModel extends CI_Model
 
 	public function getUserDetailsById($id) {
 		$result = $this->db->query("SELECT * FROM user WHERE id = '$id'");
+		if($result->num_rows() > 0) {
+			return $result->row();
+		}
+		return null;
+	}
+
+	public function getAllUserByActiveAndDeleted($accountStatus, $deleted) {
+		$result = $this->db->query("SELECT user.* FROM user INNER JOIN login ON user.username = login.username WHERE account_is_active = '$accountStatus' and deleted is $deleted and user_role= 'USER' ");
+		if($result->num_rows() > 0) {
+			return $result->result();
+		}
+		return [];
+	}
+
+	public function updateUserWallet($userWallet) {
+		$this->db->where('user_id', $userWallet->user_id);
+		return $this->db->update('user_wallet', $userWallet);
+	}
+
+	public function insertUserWalletDefault($user_id) {
+		$user_wallet_data = array(
+			'user_id'  => $user_id,
+			'shopping_fund' => 5000,
+			'profit_sharing_value' => 100000,
+			'daily_profit' => 0,
+			'direct_referral_income' => 0,
+			'created_at' => date('Y-m-d h:i:sa')
+		);
+		$this->db->insert('user_wallet', $user_wallet_data);
+	}
+
+	public function getUserWalletByUserId($userId) {
+		$result = $this->db->query("SELECT * FROM user_wallet where user_id = $userId ");
 		if($result->num_rows() > 0) {
 			return $result->row();
 		}

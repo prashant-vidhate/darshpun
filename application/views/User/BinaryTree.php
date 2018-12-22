@@ -29,12 +29,12 @@
       overflow: auto;
       text-align: center;
     }
-    #github-link {
+    /* #github-link {
       position: fixed;
       top: 0px;
       right: 10px;
       font-size: 3em;
-    }
+    } */
   </style>
 </head>
 <body class="hold-transition skin-blue sidebar-mini">
@@ -61,7 +61,6 @@
       <div class="row">
         <div class="col-lg-12 col-sm-12 col-xs-12">
           <div id="chart-container"></div>
-          <a id="github-link" href="https://github.com/dabeng/OrgChart" target="_blank"><i class="fa fa-github-square"></i></a>
         </div>
       </div>
     </section>
@@ -107,7 +106,7 @@
                 url: '<?php echo base_url(); ?>User/getUserTreeByPlacementId',
                 type: 'POST',
                 header: 'Content-type: application/json',
-                data: {placementId:1},
+                data: {},
                 success: function(data) {
                     if(data) {
                         var arr = JSON.parse(data);
@@ -130,7 +129,7 @@
     }
 
     function list_to_tree(list) {
-        var map = {}, node, roots = [], i;
+        var map = {}, node, roots = [], i, placement_id_is_exist = false;
         for (i = 0; i < list.length; i += 1) {
             map[list[i].id] = i; // initialize the map
             list[i].children = []; // initialize the children
@@ -139,7 +138,13 @@
         }
         for (i = 0; i < list.length; i += 1) {
             node = list[i];
-            if (node.placement_id !== "0") {
+            for (j = 0; j < list.length; j += 1) {
+              if(list[j].id == node.placement_id) {
+                placement_id_is_exist = true;
+                break;
+              }
+            }
+            if (node.placement_id !== "0" && placement_id_is_exist) {
                 // if you have dangling branches check that map[node.parentId] exists
                 list[map[node.placement_id]].children.push(node);
             } else {

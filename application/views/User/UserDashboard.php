@@ -39,11 +39,11 @@
     <section class="content">
       <!-- Small boxes (Stat box) -->
       <div class="row">
-        <div class="col-lg-4 col-xs-6">
+        <div class="col-lg-3 col-xs-6">
           <!-- small box -->
           <div class="small-box bg-aqua">
             <div class="inner">
-              <h3>0</h3>
+              <h3><?php if(isset($userWallet->shopping_fund)) { echo $userWallet->shopping_fund; } else { echo 0; } ?></h3>
               <p>Shopping Fund</p>
             </div>
             <div class="icon">
@@ -53,11 +53,11 @@
           </div>
         </div>
         <!-- ./col -->
-        <div class="col-lg-4 col-xs-6">
+        <div class="col-lg-3 col-xs-6">
           <!-- small box -->
           <div class="small-box bg-green">
             <div class="inner">
-              <h3>0</h3>
+              <h3><?php if(isset($userWallet->profit_sharing_value)) { echo $userWallet->profit_sharing_value; } else { echo 0; } ?></h3>
               <p>Profit Sharing Value</p>
             </div>
             <div class="icon">
@@ -67,11 +67,25 @@
           </div>
         </div>
         <!-- ./col -->
-        <div class="col-lg-4 col-xs-6">
+        <div class="col-lg-3 col-xs-6">
+          <!-- small box -->
+          <div class="small-box bg-red">
+            <div class="inner">
+              <h3><?php if(isset($userWallet->daily_profit)) { echo $userWallet->daily_profit; } else { echo 0; } ?></h3>
+              <p>Daily Profit</p>
+            </div>
+            <div class="icon">
+              <i class="ion ion-stats-bars"></i>
+            </div>
+            <a href="<?php echo base_url();?>User/DailyProfit" class="small-box-footer"> Daily Profit <i class="fa fa-arrow-circle-right"></i></a>
+          </div>
+        </div>
+        <!-- ./col -->
+        <div class="col-lg-3 col-xs-6">
           <!-- small box -->
           <div class="small-box bg-yellow">
             <div class="inner">
-              <h3>0</h3>
+              <h3><?php if(isset($userWallet->direct_referral_income)) { echo $userWallet->direct_referral_income; } else { echo 0; } ?></h3>
               <p>Direct Referral Income</p>
             </div>
             <div class="icon">

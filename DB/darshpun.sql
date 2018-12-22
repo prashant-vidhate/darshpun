@@ -95,3 +95,14 @@ CREATE TABLE `darshpun`.`user_wallet` (
     `updated_date` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP , 
     PRIMARY KEY (`id`)
 ) ENGINE = MyISAM;
+
+ALTER TABLE `user_wallet` ADD UNIQUE(`user_id`);
+
+ALTER TABLE `user_wallet` CHANGE `deposited_profit_sharing_value` `daily_profit` FLOAT(10,2) NOT NULL;
+
+INSERT INTO `user_wallet` (`id`, `user_id`, `shopping_fund`, `profit_sharing_value`, `daily_profit`, `direct_referral_income`, `created_at`, `updated_date`) VALUES ('1', '1', '5000.00', '99500.00', '500.00', '0.00', '2018-12-12 00:00:00', CURRENT_TIMESTAMP);
+INSERT INTO `joining_details` (`id`, `sponser_id`, `newly_created_user_id`, `joining_date`, `joining_amount`, `created_at`, `updated_date`) VALUES ('1', '1', '1', '2018-12-12 00:00:00', '10000', '2018-12-12 00:00:00', CURRENT_TIMESTAMP);
+
+INSERT INTO `login` (`username`, `password`, `created_at`, `updated_date`, `user_role`) VALUES ('sysadmin', 'a159b7ae81ba3552af61e9731b20870515944538', '2018-12-16', '2018-12-16 08:34:04', 'ADMIN')
+INSERT INTO `user` (`id`, `username`, `sponser_id`, `placement_id`, `placement_position`, `title`, `firstname`, `middlename`, `lastname`, `date_of_birth`, `gender`, `mobile`, `email`, `location`, `landmark`, `city`, `district`, `state`, `pin_code`, `country`, `deleted`, `account_is_active`, `created_date`, `updated_date`) VALUES 
+(2, 'sysadmin', 0, 0, 'Root', 'Mr. ', 'Admin', 'Admin', 'Admin', '2018-12-09', 'Male', 1236547855, NULL, NULL, NULL, 'Kopargaon', 'Ahemadnagar', 'Maharashtra', '423601', 'India', 0, 'ACTIVE', '2018-12-09', '2018-12-16 09:00:36');
