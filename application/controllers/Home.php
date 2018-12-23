@@ -82,6 +82,7 @@ class Home extends CI_Controller
             $this->session->set_userdata("admin_role", $result->user_role);
             redirect('Admin/Dashboard');
         }
+        $this->session->set_flashdata('error', 'Login failed. Please enter valid credential.');
         redirect('home/HomePage');	
     }
 }

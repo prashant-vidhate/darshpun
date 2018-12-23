@@ -121,6 +121,21 @@
                 </div><!-- end col -->
 
                 <div class="col-md-4">
+					<?php if ($this->session->flashdata('success')) {
+						echo "<div class='row'>
+								<div class='alert alert-success alert-dismissable col-md-12'>
+								<button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button>
+								<strong>";
+						echo $this->session->flashdata('success');
+						echo "  </strong></div></div>";
+					} else if ($this->session->flashdata('error')) {
+						echo "<div class='row'>
+								<div class='alert alert-danger alert-dismissable col-md-12'>
+								<button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button>
+								<strong> <i class='fa fa-times' aria-hidden='true'></i> &nbsp;&nbsp;";
+						echo $this->session->flashdata('error');
+						echo "  </strong></div></div>";
+					} ?>
 					<div class="row border" style="background-color: #f68b20;">
 						<div class="col-md-12">
 							<form id="loginForm" class="form-horizontal"

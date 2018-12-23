@@ -44,57 +44,46 @@ class User extends CI_Controller
         $password = $_POST['password'];
 
         $newUsername = $this->userModel->registerUser(
-            $sponserId,
-            $placementId,
-            $placementPosition,
-            $title,
-            $firstName,
-            $middleName,
-            $lastName,
-            $dob,
-            $gender,
-            $contact,
-            $email,
-            $pan,
-            $location,
-            $landmark,
-            $city,
-            $district,
-            $state,
-            $pincode,
-            $country,
-            $password
-        );
+            $sponserId,$placementId,$placementPosition,$title,$firstName,$middleName,$lastName,$dob,$gender,$contact,
+            $email,$pan,$location,$landmark,$city,$district,$state,$pincode,$country,$password);
 
         if ($newUsername != null) {
+            $directReferalAmount = 1000;
+            // Update user wallet for direct refferal income of direct user
+            $directUserId = $this->userModel->getUserDetailsByUser($newUsername)->sponser_id;
+            $userWallet = $this->userModel->getUserWalletByUserId($directUserId);
+
+            if($userWallet->direct_referral_income < 1500) {
+                $userWallet->direct_referral_income += $directReferalAmount;
+                $this->userModel->updateUserWallet($userWallet);
+            }            
+
+            $userWallet = null;
+
+            // Update user wallet of all users for profit sharing income / daily profit income
             $total_profit = $joining_amount * 0.05;
             $user_list = $this->userModel->getAllUserByActiveAndDeleted('ACTIVE', 'false');
             $countOfUsers = sizeof($user_list);
             $profit = $total_profit / $countOfUsers;
             foreach ($user_list as $user) {
                 $userWallet = $this->userModel->getUserWalletByUserId($user->id);
-                if ($userWallet != null) {
-                    // users wallet's profit sharing value should not be zero
-                    if($userWallet->profit_sharing_value != 0) {
-                        $profit_value = $userWallet->profit_sharing_value - $profit;
-                        if($profit_value >= 0) {
-                            $userWallet->profit_sharing_value = $profit_value;
-                            $userWallet->daily_profit = $userWallet->daily_profit + $profit;
-                        } else {
-                            $userWallet->daily_profit = $userWallet->daily_profit + $userWallet->profit_sharing_value;
-                            $userWallet->profit_sharing_value = 0;
-                        }
-                        $this->userModel->updateUserWallet($userWallet);
+                // users wallet's profit sharing value should not be zero
+                if($userWallet->profit_sharing_value != 0) {
+                    $profit_value = $userWallet->profit_sharing_value - $profit;
+                    if($profit_value >= 0) {
+                        $userWallet->profit_sharing_value = $profit_value;
+                        $userWallet->daily_profit = $userWallet->daily_profit + $profit;
+                    } else {
+                        $userWallet->daily_profit = $userWallet->daily_profit + $userWallet->profit_sharing_value;
+                        $userWallet->profit_sharing_value = 0;
                     }
-                    
-                } else {
-                    // $this->userModel->saveUserWallet($user->id);
+                    $this->userModel->updateUserWallet($userWallet);
                 }
             }
         } else {
-            # User not registered
+            $this->session->set_flashdata('error', 'Somthing went wrong. User is not registered. Please try again or contact administrator.');
+            redirect('Home/JoinNow');
         }
-
         redirect('User/RegisterSummary/' . $newUsername);
     }
 

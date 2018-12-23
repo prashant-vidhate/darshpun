@@ -14,6 +14,14 @@ class UserModel extends CI_Model
 		return null;
 	}
 
+	public function getChildOfSponser($sponserId) {
+		$result = $this->db->query("SELECT * FROM user WHERE sponser_id = '$sponserId'");
+		if($result->num_rows() > 0) {
+			return $result->result();
+		}
+		return [];
+	}
+
 	public function registerUser($sponserId, $placementId, $placementPosition, $title, $firstName, $middleName, $lastName, $dob, $gender, $contact, $email, $pan, 
 		$location, $landmark, $city, $district, $state, $pincode, $country, $password) {
 			
@@ -56,43 +64,17 @@ class UserModel extends CI_Model
 
 			$user_id = $this->db->insert_id();
 			if($user_id) {
-				// echo 'inserted '.$user_id;
 				// LOGIN table entry
-				$login_data = array(
-					'username' => $newUsername,
-					'password' => sha1($password),
-					'created_at' => date('Y-m-d h:i:sa')
-				);
-				$this->db->insert('login',$login_data);
-				
+				$this->insertLogin($newUsername, $password);
+
 				// USER_BANK_ACCOUNT table entry
-				$bank_account_data = array(
-					'user_id'	 =>  $user_id,
-					'pan_number' => $pan,
-					'created_at' => date('Y-m-d h:i:sa')
-				);             
-				$this->db->insert('bank_details',$bank_account_data);
+				$this->saveBankDetails($user_id, $pan);
 
 				// USER_WALLET
-				$user_wallet_data = array(
-					'user_id'  => $user_id,
-					'shopping_fund' => 5000,
-					'profit_sharing_value' => 100000,
-					'daily_profit' => 0,
-					'direct_referral_income' => 0,
-					'created_at' => date('Y-m-d h:i:sa')
-				);
-				$this->db->insert('user_wallet', $user_wallet_data);
+				$this->saveUserWallet($user_id);
 
 				// JOINING DETAILS
-				$joining_details_data = array(
-					'sponser_id' => $user_id,
-					'newly_created_user_id' => $user_id,
-					'joining_date' =>date('Y-m-d h:i:sa'),
-					'joining_amount' => $joining_amount,
-					'created_at' => date('Y-m-d h:i:sa')
-				);
-				$this->db->insert('joining_details',$joining_details_data);
+				$this->saveJoiningDetails($user_id, $joining_amount);
 
 				return $newUsername;
 			}
@@ -103,6 +85,47 @@ class UserModel extends CI_Model
 			var_dump($e->getMessage());
 		}
 		return $newUsername;
+	}
+
+	public function saveJoiningDetails($user_id, $joining_amount) {
+		$joining_details_data = array(
+			'sponser_id' => $user_id,
+			'newly_created_user_id' => $user_id,
+			'joining_date' =>date('Y-m-d h:i:sa'),
+			'joining_amount' => $joining_amount,
+			'created_at' => date('Y-m-d h:i:sa')
+		);
+		$this->db->insert('joining_details',$joining_details_data);
+	}
+
+	public function saveUserWallet($user_id) {
+		$user_wallet_data = array(
+			'user_id'  => $user_id,
+			'shopping_fund' => 5000,
+			'profit_sharing_value' => 100000,
+			'daily_profit' => 0,
+			'direct_referral_income' => 0,
+			'created_at' => date('Y-m-d h:i:sa')
+		);
+		$this->db->insert('user_wallet', $user_wallet_data);
+	}
+
+	public function saveBankDetails($user_id, $pan) {
+		$bank_account_data = array(
+			'user_id'	 =>  $user_id,
+			'pan_number' => $pan,
+			'created_at' => date('Y-m-d h:i:sa')
+		);             
+		$this->db->insert('bank_details',$bank_account_data);
+	}
+
+	public function insertLogin($newUsername, $password) {
+		$login_data = array(
+			'username' => $newUsername,
+			'password' => sha1($password),
+			'created_at' => date('Y-m-d h:i:sa')
+		);
+		$this->db->insert('login',$login_data);
 	}
 
 	public function getUserByPlacementId($placementId) {

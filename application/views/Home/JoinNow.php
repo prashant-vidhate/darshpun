@@ -38,6 +38,21 @@
         <div class="container">
             <div class="row">
                 <div class="col-md-12">
+                    <?php if ($this->session->flashdata('success')) {
+						echo "<div class='row'>
+								<div class='alert alert-success alert-dismissable col-md-12'>
+								<button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button>
+								<strong>";
+						echo $this->session->flashdata('success');
+						echo "  </strong></div></div>";
+					} else if ($this->session->flashdata('error')) {
+						echo "<div class='row'>
+								<div class='alert alert-danger alert-dismissable col-md-12'>
+								<button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button>
+								<strong>";
+						echo $this->session->flashdata('error');
+						echo "  </strong></div></div>";
+					} ?>
                     <div class="tabs">
                         <form class="form-horizontal"
                             class="form-horizontal" role="form" id="signupForm" method="post" action="<?php echo base_url() ?>User/registerUser">
