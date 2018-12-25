@@ -70,35 +70,35 @@
                                 <div class="form-group row">
                                     <label class="control-label col-sm-4" for="SponsorId">Introducer / Sponsor ID:<span class="required">*</span></label>
                                     <div class="col-sm-8">
-                                        <input type="text" class="form-control" name="sponsorId" id="sponsorId" 
+                                        <input type="text" class="form-control uppercase" name="sponsorId" id="sponsorId" 
                                             placeholder="Enter Sponsor ID" required oninput="getSponser(this.value)">
                                     </div>
                                 </div>
                                 <div class="form-group row">
                                     <label class="control-label col-sm-4" for="SponsorName">Introducer / Sponsor Name:<span class="required">*</span></label>
                                     <div class="col-sm-8"> 
-                                        <input type="text" class="form-control" name="SponsorName" id="SponsorName" placeholder="Sponsor Name" required readonly>
+                                        <input type="text" class="form-control uppercase" name="SponsorName" id="SponsorName" placeholder="Sponsor Name" required readonly>
                                     </div>
                                 </div>
                                 <div class="form-group row">
                                     <label class="control-label col-sm-4" for="placementId">Placement ID:<span class="required">*</span></label>
                                     <div class="col-sm-8">
-                                        <input type="text" class="form-control" name="placementId" id="placementId" 
+                                        <input type="text" class="form-control uppercase" name="placementId" id="placementId" 
                                             placeholder="Enter Placement ID" required oninput="getPlacementSponserName(this.value)">
                                     </div>
                                 </div>
                                 <div class="form-group row">
                                     <label class="control-label col-sm-4" for="placementSponserName">Placement User Name:<span class="required">*</span></label>
                                     <div class="col-sm-8"> 
-                                        <input type="text" class="form-control" name="placementSponserName" id="placementSponserName" placeholder="Placement Sponsor Name" required readonly>
+                                        <input type="text" class="form-control uppercase" name="placementSponserName" id="placementSponserName" placeholder="Placement Sponsor Name" required readonly>
                                     </div>
                                 </div>
                                 <div class="form-group row"> 
                                     <label class="control-label col-sm-4" for="PlacementPosition">Placement Position:<span class="required">*</span></label>
                                     <div class="col-sm-8">
                                         <select class="form-control" id="placementPosition" name="placementPosition" required>
-                                            <option value="left">Left</option>
-                                            <option value="right" selected>Right</option>
+                                            <option value="left">LEFT</option>
+                                            <option value="right" selected>RIGHT</option>
                                         </select>
                                     </div>
                                 </div>
@@ -126,33 +126,28 @@
                                 <div class="form-group row">
                                     <label class="control-label col-sm-4" for="FirstName">First Name:<span class="required">*</span></label>
                                     <div class="col-sm-8">
-                                        <input type="text" class="form-control" name="FirstName" id="FirstName" placeholder="Enter First Name">
+                                        <input type="text" class="form-control uppercase" name="FirstName" id="FirstName" placeholder="Enter First Name">
                                     </div>
                                 </div>
 
                                 <div class="form-group row">
                                     <label class="control-label col-sm-4" for="MiddleName">Middle Name:<span class="required">*</span></label>
                                     <div class="col-sm-8">
-                                        <input type="text" class="form-control" name="MiddleName" id="MiddleName" placeholder="Enter Middle Name">
+                                        <input type="text" class="form-control uppercase" name="MiddleName" id="MiddleName" placeholder="Enter Middle Name">
                                     </div>
                                 </div>
 
                                 <div class="form-group row">
                                     <label class="control-label col-sm-4" for="LastName">Last Name:<span class="required">*</span></label>
                                     <div class="col-sm-8">
-                                        <input type="text" class="form-control" name="LastName" id="LastName" placeholder="Enter Last Name">
+                                        <input type="text" class="form-control uppercase" name="LastName" id="LastName" placeholder="Enter Last Name">
                                     </div>
                                 </div>
 
                                 <div class="form-group row">
                                     <label class="control-label col-sm-4" for="dob">Date of birth:<span class="required">*</span></label>
                                     <div class="col-sm-8"> 
-                                        <input type="date" class="form-control" name="dob" id="dob" placeholder="DD/MM/YYYY">
-                                        <!-- <div class='input-group date' id='datetimepicker1'>
-                                            <input type='text' class="form-control" />
-                                            <span class="input-group-addon"><span class="glyphicon glyphicon-calendar"></span>
-                                            </span>
-                                        </div> -->
+                                        <input type="date" class="form-control uppercase" name="dob" id="dob" placeholder="DD/MM/YYYY">
                                     </div>
                                 </div>
 
@@ -160,9 +155,9 @@
                                     <label class="control-label col-sm-4" for="gender">Gender:<span class="required">*</span></label>
                                     <div class="col-sm-8">
                                         <select class="form-control" id="gender" name="gender" required>
-                                            <option value="Male" selected>Male</option>
-                                            <option value="Female">Female</option>
-                                            <option value="Other">Other</option>
+                                            <option value="Male" selected>MALE</option>
+                                            <option value="Female">FEMALE</option>
+                                            <option value="Other">OTHER</option>
                                         </select>
                                     </div>
                                 </div>
@@ -170,21 +165,21 @@
                                 <div class="form-group row">
                                     <label class="control-label col-sm-4" for="contact">Contact / Mobile Number:<span class="required">*</span></label>
                                     <div class="col-sm-8">
-                                        <input type="text" class="form-control" name="contact" id="contact" placeholder="Enter Contact / Mobile Number">
+                                        <input type="text" class="form-control uppercase" name="contact" id="contact" placeholder="Enter Contact / Mobile Number">
                                     </div>
                                 </div>
 
                                 <div class="form-group row">
                                     <label class="control-label col-sm-4" for="email">Email-ID:</label>
                                     <div class="col-sm-8">
-                                        <input type="email" class="form-control" name="email" id="email" placeholder="Enter Email-ID">
+                                        <input type="email" class="form-control uppercase" name="email" id="email" placeholder="Enter Email-ID">
                                     </div>
                                 </div>
 
                                 <div class="form-group row">
                                     <label class="control-label col-sm-4" for="pan">PAN Number:</label>
                                     <div class="col-sm-8">
-                                        <input type="text" class="form-control" name="pan" id="pan" placeholder="Enter PAN number">
+                                        <input type="text" class="form-control uppercase" name="pan" id="pan" placeholder="Enter PAN number">
                                     </div>
                                 </div>
 
@@ -193,49 +188,49 @@
                                 <div class="form-group row">
                                     <label class="control-label col-sm-4" for="location">Near / House No. / Location:</label>
                                     <div class="col-sm-8">
-                                        <input type="text" class="form-control" name="location" id="location" placeholder="Enter Near / House No. / Location">
+                                        <input type="text" class="form-control uppercase" name="location" id="location" placeholder="Enter Near / House No. / Location">
                                     </div>
                                 </div>
 
                                 <div class="form-group row">
                                     <label class="control-label col-sm-4" for="landmark">Landmark / Street Road:</label>
                                     <div class="col-sm-8">
-                                        <input type="text" class="form-control" name="landmark" id="landmark" placeholder="Enter Landmark / Street Road">
+                                        <input type="text" class="form-control uppercase" name="landmark" id="landmark" placeholder="Enter Landmark / Street Road">
                                     </div>
                                 </div>
 
                                 <div class="form-group row">
                                     <label class="control-label col-sm-4" for="city">City:<span class="required">*</span></label>
                                     <div class="col-sm-8">
-                                        <input type="text" class="form-control" name="city" id="city" placeholder="Enter City">
+                                        <input type="text" class="form-control uppercase" name="city" id="city" placeholder="Enter City">
                                     </div>
                                 </div>
 
                                 <div class="form-group row">
                                     <label class="control-label col-sm-4" for="district">District:<span class="required">*</span></label>
                                     <div class="col-sm-8">
-                                        <input type="text" class="form-control" name="district" id="district" placeholder="Enter District">
+                                        <input type="text" class="form-control uppercase" name="district" id="district" placeholder="Enter District">
                                     </div>
                                 </div>
 
                                 <div class="form-group row">
                                     <label class="control-label col-sm-4" for="state">State:<span class="required">*</span></label>
                                     <div class="col-sm-8">
-                                        <input type="text" class="form-control" name="state" id="state" placeholder="Enter State">
+                                        <input type="text" class="form-control uppercase" name="state" id="state" placeholder="Enter State">
                                     </div>
                                 </div>
 
                                 <div class="form-group row">
                                     <label class="control-label col-sm-4" for="pincode">PIN Code:</label>
                                     <div class="col-sm-8">
-                                        <input type="text" class="form-control" name="pincode" id="pincode" placeholder="Enter PIN Code">
+                                        <input type="text" class="form-control uppercase" name="pincode" id="pincode" placeholder="Enter PIN Code">
                                     </div>
                                 </div>
 
                                 <div class="form-group row">
                                     <label class="control-label col-sm-4" for="country">Country:<span class="required">*</span></label>
                                     <div class="col-sm-8">
-                                        <input type="text" class="form-control" name="country" id="country" placeholder="Enter Country">
+                                        <input type="text" class="form-control uppercase" name="country" id="country" placeholder="Enter Country">
                                     </div>
                                 </div>
 

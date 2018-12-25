@@ -30,7 +30,7 @@
               <!-- Menu Footer-->
               <li class="user-footer">
                 <div class="pull-left">
-                  <a href="#" class="btn btn-default btn-flat">Profile</a>
+                  <a href="<?php echo base_url();?>User/UpdateProfile" class="btn btn-default btn-flat">Profile</a>
                 </div>
                 <div class="pull-right">
                   <a href="<?php echo base_url()?>User/Logout" class="btn btn-default btn-flat">Sign out</a>
@@ -90,7 +90,7 @@
                     <i class="fa fa-angle-left pull-right"></i>
                 </a>
                 <ul class="treeview-menu">
-                    <li><a href="<?php echo base_url();?>User/Profile"><i class="fa fa-circle-o"></i> My Profile</a></li>
+                    <li><a href="<?php echo base_url();?>User/MyProfile"><i class="fa fa-circle-o"></i> My Profile</a></li>
                     <li><a href="<?php echo base_url();?>User/UpdateProfile"><i class="fa fa-circle-o"></i> Update Profile</a></li>
                     <li><a href="<?php echo base_url();?>User/updatePassword"><i class="fa fa-circle-o"></i> Change Password</a></li>
                 </ul>

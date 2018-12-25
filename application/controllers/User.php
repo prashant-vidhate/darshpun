@@ -124,6 +124,42 @@ class User extends CI_Controller
         $this->load->view('User/Calender');
     }
 
+    public function MyProfile() {
+        $viewMode = true;
+        $this->showProfile($viewMode);
+    }
+
+    public function UpdateProfile() {
+        $viewMode = false;
+        $this->showProfile($viewMode);
+    }
+
+    public function showProfile($viewMode) {
+        $userId = $this->session->userdata("user_id");
+        $details = $this->userModel->getPersonalDetails($userId);
+        $details->name = $details->firstname.' '.$details->middlename.' '.$details->lastname;
+
+        $sponser = $this->userModel->getUserDetailsById($details->sponser_id);
+        if($sponser != null) {
+            $details->sponserUsername = $sponser->username;
+            $details->sponserName = $sponser->firstname.' '.$sponser->middlename.' '.$sponser->lastname;;
+        }
+
+        $placement = $this->userModel->getUserDetailsById($details->placement_id);
+        if($placement != null) {
+            $details->placementUsername = $placement->username;
+            $details->placementName = $placement->firstname.' '.$placement->middlename.' '.$placement->lastname;;
+        }
+        
+        $data['ProfileDetails'] = $details;
+        $data['viewMode'] = $viewMode;
+        $this->load->view('User/UpdateProfile', $data);
+    }
+
+    public function updatePassword() {
+        $this->load->view('User/updatePassword');
+    }
+
     public function Logout()
     {
         $this->session->unset_userdata("user_id");
@@ -149,4 +185,60 @@ class User extends CI_Controller
         $this->load->view('User/BinaryTree');
     }
 
+    public function UpdateUser() {
+        $userId = $this->session->userdata("user_id");
+
+        $firstName = htmlentities($this->security->xss_clean($_POST['firstName']));
+        $middleName = htmlentities($this->security->xss_clean($_POST['middleName']));
+        $lastName = htmlentities($this->security->xss_clean($_POST['lastName']));
+        $dob = htmlentities($this->security->xss_clean($_POST['dob']));
+        $gender = htmlentities($this->security->xss_clean($_POST['gender']));
+        $mobile = htmlentities($this->security->xss_clean($_POST['mobile']));
+        $email = htmlentities($this->security->xss_clean($_POST['email']));
+        $location = htmlentities($this->security->xss_clean($_POST['location']));
+        $landmark = htmlentities($this->security->xss_clean($_POST['landmark']));
+        $city = htmlentities($this->security->xss_clean($_POST['city']));
+        $district = htmlentities($this->security->xss_clean($_POST['district']));
+        $state = htmlentities($this->security->xss_clean($_POST['state']));
+        $pincode = htmlentities($this->security->xss_clean($_POST['pincode']));
+        $country = htmlentities($this->security->xss_clean($_POST['country']));
+
+        $Pan = htmlentities($this->security->xss_clean($_POST['Pan']));
+        $BankName = htmlentities($this->security->xss_clean($_POST['BankName']));
+        $BankBranch = htmlentities($this->security->xss_clean($_POST['BankBranch']));
+        $BankIFSCCode = htmlentities($this->security->xss_clean($_POST['BankIFSCCode']));
+        $AccountNo = htmlentities($this->security->xss_clean($_POST['AccountNo']));
+        $accountType = htmlentities($this->security->xss_clean($_POST['accountType']));
+
+        $this->userModel->updateUser(
+            $firstName, $middleName, $lastName, $dob, $gender, $mobile, $email, $location, $landmark, $city, $district, $state, $pincode, $country, $userId);
+
+        $isUpdated = $this->userModel->updateBankDetails($Pan, $BankName, $BankBranch, $BankIFSCCode, $AccountNo, $userId, $accountType);
+
+        if ($isUpdated) {
+            $this->session->set_flashdata('success', 'Profile is updated successfully.');
+        } else {
+            $this->session->set_flashdata('error', 'Somthing went wrong. Profile is not updated. Please try again or contact administrator.');
+        }
+        redirect('User/UpdateProfile');
+    }
+
+    public function ChangePassword() {
+        $username = $this->session->userdata("user_username");
+
+        $NewPassword = sha1(htmlentities($this->security->xss_clean($_POST['NewPassword'])));
+        $ConfirmPassword = sha1(htmlentities($this->security->xss_clean($_POST['ConfirmPassword'])));
+        
+        if($NewPassword === $ConfirmPassword) {
+            $changed = $this->userModel->changePassword($NewPassword, $username);
+            if($changed) {
+                $this->session->set_flashdata('success', 'Password is changed successfully.');
+            } else {
+                $this->session->set_flashdata('error', 'Somthing went wrong. Password not changed. Please try again or contact administrator.');
+            }
+        } else {
+            $this->session->set_flashdata('error', 'New password and confirm password is not matched.');
+        }
+        redirect('User/updatePassword');
+    }
 }

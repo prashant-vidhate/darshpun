@@ -183,5 +183,60 @@ class UserModel extends CI_Model
 		}
 		return null;
 	}
+
+	public function getPersonalDetails($userId) {
+		$result = $this->db->query("SELECT * FROM user INNER JOIN bank_details bank ON user.id = bank.user_id 
+		WHERE user.id = $userId ");
+		if($result->num_rows() > 0) {
+			return $result->row();
+		}
+		return null;
+	}
+
+	public function updateUser(
+		$firstName, $middleName, $lastName, $dob, $gender, $mobile, $email, $location, $landmark, $city, $district, $state, $pincode, $country, $userId) {
+			$user = array(
+				'firstname' => $firstName,
+				'middlename' => $middleName,
+				'lastname' => $lastName,
+				'date_of_birth' => $dob,
+				'gender' => $gender,
+				'mobile' => $mobile,
+				'email' => $email,
+				'location' => $location,
+				'landmark' => $landmark,
+				'city' => $city,
+				'district' => $district,
+				'state' => $state,
+				'pin_code' => $pincode,
+				'country' => $country
+			);
+			$this->db->where('id', $userId);
+			$isUpdated = $this->db->update('user', $user);
+			return $isUpdated;
+	}
+
+	public function updateBankDetails($Pan, $BankName, $BankBranch, $BankIFSCCode, $AccountNo, $userId, $accountType) {
+		$data = array(
+			'pan_number' => $Pan,
+			'bank_name' => $BankName,
+			'bank_branch' => $BankBranch,
+			'bank_ifsc' => $BankIFSCCode,
+			'account_number' => $AccountNo,
+			'account_type' => $accountType
+		);
+		$this->db->where('user_id', $userId);
+		$isUpdated = $this->db->update('bank_details', $data);
+		return $isUpdated;
+	}
+
+	public function changePassword($NewPassword, $username) {
+		$data = array(
+			'password' => $NewPassword
+		);
+		$this->db->where('username', $username);
+		return $this->db->update('login', $data);
+	}
+
 }
 ?>

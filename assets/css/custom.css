@@ -187,3 +187,7 @@ img.image-product:hover {
     pointer-events:none; 
     /* opacity:0.6;         */
 }
+
+.uppercase {
+    text-transform:uppercase
+}
