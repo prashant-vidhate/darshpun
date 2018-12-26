@@ -143,7 +143,7 @@ class UserModel extends CI_Model
 		return [];
 	} 
 
-	public function getUserDetailsById($id) {
+	public function getUser($id) {
 		$result = $this->db->query("SELECT * FROM user WHERE id = '$id'");
 		if($result->num_rows() > 0) {
 			return $result->row();
@@ -236,6 +236,18 @@ class UserModel extends CI_Model
 		);
 		$this->db->where('username', $username);
 		return $this->db->update('login', $data);
+	}
+
+	public function getAllChildsByPlacementIdAndSide($placementId, $placementPosition) {
+		$result = $this->db->query("SELECT * FROM user WHERE placement_id = $placementId AND placement_position = '$placementPosition'");
+		if($result->num_rows() > 0) {
+			$userList = array();
+			$rootChild = $result->row();
+			$userList = $this->getUserByPlacementId($rootChild->id);
+			array_push($userList, $rootChild);
+			return $userList;
+		}
+		return [];
 	}
 
 }

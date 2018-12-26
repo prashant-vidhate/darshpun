@@ -95,6 +95,22 @@
           </div>
         </div>
       </div>
+      <!-- Small boxes (Stat box) -->
+      <div class="row">
+        <div class="col-lg-3 col-xs-6">
+          <!-- small box -->
+          <div class="small-box bg-red">
+            <div class="inner">
+              <h3><?php if(isset($userWallet->binary_income)) { echo $userWallet->binary_income; } else { echo 0; } ?></h3>
+              <p>Binary Income</p>
+            </div>
+            <div class="icon">
+              <i class="ion ion-cash"></i>
+            </div>
+            <a href="<?php echo base_url();?>User/BinaryIncome" class="small-box-footer">Binary Income <i class="fa fa-arrow-circle-right"></i></a>
+          </div>
+        </div>
+      </div>
       <!-- /.row -->
       <div class="row">
         <div class="col-xs-12">

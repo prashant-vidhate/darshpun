@@ -108,3 +108,5 @@ INSERT INTO `user` (`id`, `username`, `sponser_id`, `placement_id`, `placement_p
 (2, 'sysadmin', 0, 0, 'Root', 'Mr. ', 'Admin', 'Admin', 'Admin', '2018-12-09', 'Male', 1236547855, NULL, NULL, NULL, 'Kopargaon', 'Ahemadnagar', 'Maharashtra', '423601', 'India', 0, 'ACTIVE', '2018-12-09', '2018-12-16 09:00:36');
 
 ALTER TABLE bank_details ADD account_type varchar(100) DEFAULT 'SAVING';
+
+ALTER TABLE `user_wallet` ADD `binary_income` FLOAT(10,2) NOT NULL DEFAULT '0' AFTER `direct_referral_income`;
