@@ -3,6 +3,7 @@
 class UserModel extends CI_Model 
 {   
 	function __CONSTRUCT() {
+		date_default_timezone_set('Asia/Kolkata');
 		//$joining_amount = 10000;
 	}
 
@@ -58,7 +59,7 @@ class UserModel extends CI_Model
 				'state' => $state,
 				'pin_code' => $pincode,
 				'country' => $country,
-				'created_date' => date('Y-m-d h:i:sa')
+				'created_date' => date('Y-m-d H:i:s')
 			);
 			$this->db->insert('user',$data);
 
@@ -75,6 +76,9 @@ class UserModel extends CI_Model
 
 				// JOINING DETAILS
 				$this->saveJoiningDetails($user_id, $joining_amount);
+
+				// DEFAULT ENTRY FOR COUNT OF DIRECT REFERRAL
+				$this->saveUserDirectReferral($user_id);
 
 				return $newUsername;
 			}
@@ -95,7 +99,16 @@ class UserModel extends CI_Model
 			'joining_amount' => $joining_amount,
 			'created_at' => date('Y-m-d h:i:sa')
 		);
-		$this->db->insert('joining_details',$joining_details_data);
+		$this->db->insert('joining_details', $joining_details_data);
+	}
+
+	public function saveUserDirectReferral($user_id) {
+		$user_direct_referral_mapping_data = array(
+			'user_id' => $user_id,
+			'direct_referrals' => 0,
+			'created_date' => date('Y-m-d h:i:sa')
+		);
+		$this->db->insert('user_direct_referral_mapping', $user_direct_referral_mapping_data);
 	}
 
 	public function saveUserWallet($user_id) {
@@ -151,8 +164,8 @@ class UserModel extends CI_Model
 		return null;
 	}
 
-	public function getAllUserByActiveAndDeleted($accountStatus, $deleted) {
-		$result = $this->db->query("SELECT user.* FROM user INNER JOIN login ON user.username = login.username WHERE account_is_active = '$accountStatus' and deleted is $deleted and user_role= 'USER' ");
+	public function getUserForProfitSharing($accountStatus, $deleted, $userId) {
+		$result = $this->db->query("SELECT user.*, referral.direct_referrals as direct_referral FROM user INNER JOIN login ON user.username = login.username LEFT JOIN user_direct_referral_mapping referral on user.id = referral.user_id WHERE account_is_active = '$accountStatus' and deleted is $deleted and user_role= 'USER' AND referral.direct_referrals < 2 AND user.id NOT IN ($userId) order by user.id ");
 		if($result->num_rows() > 0) {
 			return $result->result();
 		}
@@ -250,5 +263,133 @@ class UserModel extends CI_Model
 		return [];
 	}
 
+	public function insertProfitSharingHistory($user_id, $new_user_id, $transaction_date, $transaction_amount, $transaction_remark, $created_date) {
+		$profit_sharing = array(
+			'user_id' => $user_id,
+			'new_user_id' => $new_user_id,
+			'transaction_date' => $transaction_date,
+			'transaction_amount' => $transaction_amount,
+			'transaction_remark' => $transaction_remark,
+			'created_date' => $created_date
+		);
+		$this->db->insert('profit_sharing_history', $profit_sharing);
+	}
+
+	public function getProfitSharingHistoryByUserId($user_id) {
+		$result = $this->db->query("SELECT * FROM profit_sharing_history WHERE user_id = $user_id ORDER BY id ");
+		if($result->num_rows() > 0) {
+			return $result->result();
+		}
+		return [];
+	}
+
+	public function insertDirectReferralHistory($user_id , $new_user_id , $transaction_date , $transaction_amount , $transaction_remark , $created_date) {
+		$direct_referral = array(
+			'user_id' => $user_id,
+			'new_user_id' => $new_user_id,
+			'transaction_date' => $transaction_date,
+			'transaction_amount' => $transaction_amount,
+			'transaction_remark' => $transaction_remark,
+			'created_date' => $created_date
+		);
+		$this->db->insert('direct_referral_history', $direct_referral);
+	}
+
+	public function getDirectReferralHistoryByUserId($user_id) {
+		$result = $this->db->query("SELECT * FROM direct_referral_history WHERE user_id = $user_id ORDER BY id ");
+		if($result->num_rows() > 0) {
+			return $result->result();
+		}
+		return [];
+	}
+
+	public function insertBinaryIncomeHistory($user_id , $new_user_id , $pair_match, $transaction_date , $transaction_amount , $transaction_remark , $created_date) {
+		$binary_income = array(
+			'user_id' => $user_id,
+			'new_user_id' => $new_user_id,
+			'pair_match' => $pair_match,
+			'transaction_date' => $transaction_date,
+			'transaction_amount' => $transaction_amount,
+			'transaction_remark' => $transaction_remark,
+			'created_date' => $created_date
+		);
+		$this->db->insert('binary_income_history', $binary_income);
+	}
+
+	public function getBinaryIncomeHistoryByUserId($user_id) {
+		$result = $this->db->query("SELECT * FROM binary_income_history WHERE user_id = $user_id AND pair_match > 0 ORDER BY id ");
+		if($result->num_rows() > 0) {
+			return $result->result();
+		}
+		return [];
+	}
+
+	public function getUserBySponserId($sponserId) {
+		$result = $this->db->query("SELECT * FROM user WHERE sponser_id = $sponserId ");
+		if($result->num_rows() > 0) {
+			return $result->result();
+		}
+		return [];
+	}
+
+	public function getDirectReferralList($user_id) {
+		$result = $this->db->query("SELECT user.*,sponser_user.username as sponser_username, placement_user.username as placement_username FROM user 
+									INNER join user sponser_user ON sponser_user.id = user.sponser_id
+									INNER join user placement_user ON placement_user.id = user.placement_id
+									WHERE user.sponser_id IN ($user_id) ");
+		if($result->num_rows() > 0) {
+			return $result->result();
+		}
+		return [];
+	}
+
+	public function getDirectReferralUserMappingByUserId($user_id) {
+		$result = $this->db->query("SELECT * FROM user_direct_referral_mapping WHERE user_id = $user_id ");
+		if($result->num_rows() > 0) {
+			return $result->row();
+		}
+		return null;
+	}
+
+	public function updateDirectReferralMapping($user_id, $direct_referrals) {
+		$user_direct_referral_mapping_data = array(
+			'direct_referrals' => $direct_referrals
+		);
+		$this->db->where('user_id', $user_id);
+		return $this->db->update('user_direct_referral_mapping', $user_direct_referral_mapping_data);
+	}
+
+	public function getGroupListByUserList($user_id) {
+		$result = $this->db->query("SELECT user.*,sponser_user.username as sponser_username, placement_user.username as placement_username FROM user 
+									LEFT join user sponser_user ON sponser_user.id = user.sponser_id
+									LEFT join user placement_user ON placement_user.id = user.placement_id
+									WHERE user.id IN ($user_id) ORDER BY id ");
+		if($result->num_rows() > 0) {
+			return $result->result();
+		}
+		return [];
+	}
+
+	public function getUserLevelByUserId($userId, $childUserId) {
+		$result = $this->db->query("SELECT * FROM (SELECT  @r AS _id,
+											(
+											SELECT  @r := placement_id
+											FROM    user
+											WHERE   id = _id
+											) AS parent,
+											@l := @l + 1 AS lvl
+									FROM    (
+											SELECT  @r := '$childUserId',
+													@l := 0,
+													@cl := 0
+											) vars,	
+											user h
+									WHERE    @r <> 0) as aa
+									where _id = '$userId'");
+		if($result->num_rows() > 0) {
+			return $result->row()->lvl;
+		}
+		return null;
+	}
 }
 ?>

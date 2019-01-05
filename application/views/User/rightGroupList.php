@@ -18,6 +18,7 @@
   <!-- AdminLTE Skins. Choose a skin from the css/skins
        folder instead of downloading all of them to reduce the load. -->
   <link rel="stylesheet" href="<?php echo base_url() ?>assets/User/dist/css/skins/_all-skins.min.css">
+
 </head>
 <body class="hold-transition skin-blue sidebar-mini">
 <div class="wrapper">
@@ -27,43 +28,23 @@
     <!-- Content Header (Page header) -->
     <section class="content-header">
       <h1>
-      Growth Parter Income
-        <small>My Income</small>
+      Right Group List
+        <small>My Network</small>
       </h1>
       <ol class="breadcrumb">
         <li><a href="#"><i class="fa fa-dashboard"></i> Home</a></li>
-        <li><a href="#"> My Income</a></li>
-        <li class="active">Growth Parter Income</li>
+        <li><a href="#"> My Network</a></li>
+        <li class="active">Right Group List</li>
       </ol>
     </section>
 
     <!-- Main content -->
     <section class="content">
-      <!-- Small boxes (Stat box) -->
-      <div class="row">
-        <div class="col-lg-3 col-xs-6">
-          <!-- small box -->
-          <div class="small-box bg-yellow">
-            <div class="inner">
-              <h3><?php if (isset($userWallet->binary_income)) {
-                    echo $userWallet->binary_income;
-                  } else {
-                    echo 0;
-                  } ?></h3>
-              <p>Growth Parter Income</p>
-            </div>
-            <div class="icon">
-              <i class="ion ion-cash"></i>
-            </div>
-            <!-- <a href="#" class="small-box-footer"> <i class="fa fa-arrow-circle-right"></i></a>             -->
-          </div>
-        </div>
-      </div>
       <div class="row">
         <div class="col-xs-12">
           <div class="box">
             <div class="box-header">
-              <h3 class="box-title">Growth Partner Income</h3>
+              <h3 class="box-title">Right Group List</h3>
             </div>
             <!-- /.box-header -->
             <div class="box-body">
@@ -71,22 +52,26 @@
                 <thead>
                   <tr>
                     <th>Sr. No.</th>
-                    <th>Transaction Date</th>
-                    <th>Pairs Match</th>
-                    <th>Transaction Remark</th>
-                    <th>Transaction Amount</th>
-                    <th>Close/Open</th>
+                    <th>Partner Id</th>
+                    <th>Partner Name</th>
+                    <th>Joining Date & Time</th>
+                    <th>Sponser ID</th>
+                    <th>Placement ID</th>
+                    <th>Placement position</th>
+                    <th>Action</th>
                   </tr>
                 </thead>
                 <tbody>
-                  <?php $cnt = 0; if(isset($binaryIncomeHistory)) { foreach($binaryIncomeHistory as $binaryIncome) { $cnt++; ?>
+                  <?php if(isset($rightGroupList)) { foreach($rightGroupList as $rightGroupUser) { ?>
                     <tr>
                       <td></td>
-                      <td><?php if(isset($binaryIncome->transaction_date)) echo $binaryIncome->transaction_date; ?></td>
-                      <td><?php if(isset($binaryIncome->pair_match)) echo $binaryIncome->pair_match; ?></td>
-                      <td><?php if(isset($binaryIncome->transaction_remark)) echo $binaryIncome->transaction_remark; ?></td>
-                      <td><?php if(isset($binaryIncome->transaction_amount)) echo $binaryIncome->transaction_amount; ?></td>
-                      <td></td>
+                      <td><?php if(isset($rightGroupUser->username)) echo $rightGroupUser->username; ?></td>
+                      <td style="text-transform:uppercase;"><?php if(isset($rightGroupUser->name)) echo $rightGroupUser->name; ?></td>
+                      <td><?php if(isset($rightGroupUser->created_date)) echo $rightGroupUser->created_date; ?></td>
+                      <td><?php if(isset($rightGroupUser->sponser_username)) echo $rightGroupUser->sponser_username; ?></td>
+                      <td><?php if(isset($rightGroupUser->placement_username)) echo $rightGroupUser->placement_username; ?></td>
+                      <td style="text-transform:uppercase;"><?php if(isset($rightGroupUser->placement_position)) echo $rightGroupUser->placement_position; ?></td>
+                      <td><a href="<?php echo base_url(); ?>User/ViewProfile?username=<?php if(isset($rightGroupUser->username)) echo $rightGroupUser->username; ?>">View Profile</a></td>
                     </tr>
                   <?php } } ?>
                 </tbody>

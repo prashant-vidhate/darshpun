@@ -19,7 +19,6 @@ class User extends CI_Controller
 
     public function registerUser()
     {
-
         $joining_amount = 10000;
 
         $sponserId = $_POST['sponsorId'];
@@ -48,28 +47,22 @@ class User extends CI_Controller
             $email,$pan,$location,$landmark,$city,$district,$state,$pincode,$country,$password);
 
         if ($newUsername != null) {
-            $directReferalAmount = 1000;
             // 1. Update user wallet for direct refferal income of direct user
             // 2. Update user wallet of all users for profit sharing income / daily profit income
             // 3. Update user wallet of all upper level placement nodes for binary income
 
             $newCreatedUser = $this->userModel->getUserDetailsByUser($newUsername);
             // 1. Update user wallet for direct refferal income of direct user
-            $directUserId = $newCreatedUser->sponser_id;
-            $userWallet = $this->userModel->getUserWalletByUserId($directUserId);
-
-            if($userWallet->direct_referral_income < 1500) {
-                $userWallet->direct_referral_income += $directReferalAmount;
-                $this->userModel->updateUserWallet($userWallet);
-            }            
+            $this->updateDirectReferral($newCreatedUser);
 
             //2.  Update user wallet of all users for profit sharing income / daily profit income
-            $this->updateWalletForProfitSharingIncome($joining_amount);
+            $this->updateWalletForProfitSharingIncome($joining_amount, $newCreatedUser);
 
             // 3. Update user wallet of all upper level placement nodes for binary income
-            $this->updateBinaryIncomeOfParentNodes($newCreatedUser->placement_id);
+            $this->updateBinaryIncomeOfParentNodes($newCreatedUser);
 
-            
+            // 4. Update direct referral count for sponser ID
+            $this->updateDirectReferralCountForSponser($newCreatedUser);
         } else {
             $this->session->set_flashdata('error', 'Somthing went wrong. User is not registered. Please try again or contact administrator.');
             redirect('Home/JoinNow');
@@ -77,7 +70,38 @@ class User extends CI_Controller
         redirect('User/RegisterSummary/' . $newUsername);
     }
 
-    public function updateBinaryIncomeOfParentNodes($placementId) {
+    public function updateDirectReferralCountForSponser($newCreatedUser) {
+        $sponserUserMapping = $this->userModel->getDirectReferralUserMappingByUserId($newCreatedUser->sponser_id);
+        if($sponserUserMapping != null) {
+            $sponserUserMapping->direct_referrals = $sponserUserMapping->direct_referrals + 1;
+            $this->userModel->updateDirectReferralMapping($sponserUserMapping->user_id, $sponserUserMapping->direct_referrals);
+        }
+    }
+
+    public function updateDirectReferral($newCreatedUser) {
+        $directReferalAmount = 1000;
+        $userWallet = $this->userModel->getUserWalletByUserId($newCreatedUser->sponser_id);
+
+        if($userWallet->direct_referral_income < 1500) {
+            $userWallet->direct_referral_income += $directReferalAmount;
+            $update = $this->userModel->updateUserWallet($userWallet);
+            if($update) {
+                $user_id = $userWallet->user_id;
+                $new_user_id = $newCreatedUser->id;
+                $transaction_date = date('Y-m-d h:i:sa');
+                $transaction_amount = $directReferalAmount;
+                $transaction_remark = $newCreatedUser->username.'/'.$newCreatedUser->firstname.' '.$newCreatedUser->lastname.'/ Invite Partner Income';
+                $created_date = date('Y-m-d h:i:sa');
+
+                $this->userModel->insertDirectReferralHistory(
+                    $user_id , $new_user_id , $transaction_date , $transaction_amount , $transaction_remark , $created_date
+                );
+            }
+        }
+    }
+
+    public function updateBinaryIncomeOfParentNodes($newCreatedUser) {
+        $placementId = $newCreatedUser->placement_id;
         while($placementId != 0) {
             $userWallet = null;
             $rightChildCount = sizeof($this->userModel->getAllChildsByPlacementIdAndSide($placementId, 'right'));
@@ -89,31 +113,80 @@ class User extends CI_Controller
             }
             $userWallet = $this->userModel->getUserWalletByUserId($placementId);
             $userWallet->binary_income = $binaryIncome;
-            $this->userModel->updateUserWallet($userWallet);
+            $update = $this->userModel->updateUserWallet($userWallet);
+
+            if($update) {
+                $user_id = $userWallet->user_id;
+                $new_user_id = $newCreatedUser->id;
+                $pair_match = $binaryIncome / 500;
+                $transaction_date = date('Y-m-d h:i:sa');
+                $transaction_amount = $binaryIncome;
+                $transaction_remark = 'Growth Partner Income';
+                $created_date = date('Y-m-d h:i:sa');
+
+                $this->userModel->insertBinaryIncomeHistory(
+                    $user_id, $new_user_id, $pair_match, $transaction_date, $transaction_amount, $transaction_remark, $created_date
+                );
+            }
 
             $placementId = $this->userModel->getUser($placementId)->placement_id;
         }
     }
 
-    public function updateWalletForProfitSharingIncome($joining_amount) {
+    public function updateWalletForProfitSharingIncome($joining_amount, $newCreatedUser) {
         $userWallet = null;        
         $total_profit = $joining_amount * 0.05;
-        $user_list = $this->userModel->getAllUserByActiveAndDeleted('ACTIVE', 'false');
-        $countOfUsers = sizeof($user_list);
-        $profit = $total_profit / $countOfUsers;
+        $user_list = $this->userModel->getUserForProfitSharing('ACTIVE', 'false', $newCreatedUser->id);
+        $final_user_list = array();
+
         foreach ($user_list as $user) {
-            $userWallet = $this->userModel->getUserWalletByUserId($user->id);
-            // users wallet's profit sharing value should not be zero
-            if($userWallet->profit_sharing_value != 0) {
-                $profit_value = $userWallet->profit_sharing_value - $profit;
-                if($profit_value >= 0) {
-                    $userWallet->profit_sharing_value = $profit_value;
-                    $userWallet->daily_profit = $userWallet->daily_profit + $profit;
-                } else {
-                    $userWallet->daily_profit = $userWallet->daily_profit + $userWallet->profit_sharing_value;
-                    $userWallet->profit_sharing_value = 0;
+            if($user->direct_referral != null) {
+                $childUserSize = $user->direct_referral;
+            } else {
+                // insert entry for sponser
+                $childUserSize = 0;
+            }
+
+            $nowFormat = date('Y-m-d H:i:s');
+        
+            $hourdiff = round((strtotime($nowFormat) - strtotime($user->created_date))/3600, 1);
+            if($childUserSize < 2 && $hourdiff >= 12) {
+                array_push($final_user_list, $user);
+            }
+        }
+
+        $countOfUsers = sizeof($final_user_list);
+
+        if($countOfUsers != 0) {
+            $profit = $total_profit / $countOfUsers;
+            foreach ($final_user_list as $user) {
+                $userWallet = $this->userModel->getUserWalletByUserId($user->id);
+                // users wallet's profit sharing value should not be zero
+                if($userWallet->profit_sharing_value != 0) {
+                    $profit_value = $userWallet->profit_sharing_value - $profit;
+                    if($profit_value >= 0) {
+                        $userWallet->profit_sharing_value = $profit_value;
+                        $userWallet->daily_profit = $userWallet->daily_profit + $profit;
+                        $transaction_amount = $profit;    
+                    } else {
+                        $userWallet->daily_profit = $userWallet->daily_profit + $userWallet->profit_sharing_value;
+                        $transaction_amount = $userWallet->profit_sharing_value;    
+                        $userWallet->profit_sharing_value = 0;
+                    }
+                    $isUpdated = $this->userModel->updateUserWallet($userWallet);
+
+                    if($isUpdated) {
+                        $user_id = $userWallet->user_id;
+                        $new_user_id = $newCreatedUser->id;
+                        $transaction_date = date('Y-m-d h:i:sa');
+                        $transaction_remark = $newCreatedUser->username.'/'.$newCreatedUser->firstname.' '.$newCreatedUser->lastname.'/ Daily Profit';
+                        $created_date = date('Y-m-d h:i:sa');
+
+                        $this->userModel->insertProfitSharingHistory(
+                            $user_id, $new_user_id, $transaction_date, $transaction_amount, $transaction_remark, $created_date
+                        );
+                    }
                 }
-                $this->userModel->updateUserWallet($userWallet);
             }
         }
     }
@@ -165,6 +238,11 @@ class User extends CI_Controller
         $this->showProfile($viewMode);
     }
 
+    public function ViewProfile() {
+        $viewMode = true;
+        $this->showProfile($viewMode);
+    }
+
     public function ShoppingFund() {
         $user_id = $this->session->userdata("user_id");
         $data['userWallet'] = $this->userModel->getUserWalletByUserId($user_id);
@@ -174,23 +252,42 @@ class User extends CI_Controller
     public function BinaryIncome() {
         $user_id = $this->session->userdata("user_id");
         $data['userWallet'] = $this->userModel->getUserWalletByUserId($user_id);
+        $data['binaryIncomeHistory'] = $this->userModel->getBinaryIncomeHistoryByUserId($user_id);
         $this->load->view('User/BinaryIncome', $data);
     }
 
     public function ProfileSharingValue() {
         $user_id = $this->session->userdata("user_id");
-        $data['userWallet'] = $this->userModel->getUserWalletByUserId($user_id);
+        $userWallet = $this->userModel->getUserWalletByUserId($user_id);
+        $userWallet->DefaultProfitSharingValue = 100000.00;
+        $data['userWallet'] = $userWallet;
+        $data['profitSharingHistory'] = $this->userModel->getProfitSharingHistoryByUserId($user_id);
         $this->load->view('User/ProfileSharingValue', $data);
     }
 
     public function DirectReferralIncome() {
         $user_id = $this->session->userdata("user_id");
         $data['userWallet'] = $this->userModel->getUserWalletByUserId($user_id);
+        $data['directReferralHistory'] = $this->userModel->getDirectReferralHistoryByUserId($user_id);
         $this->load->view('User/DirectReferralIncome', $data);
     }
 
     public function showProfile($viewMode) {
         $userId = $this->session->userdata("user_id");
+        if(isset($_GET['username'])) {
+            $username = $_GET['username'];
+            $user = $this->userModel->getUserDetailsByUser($username);
+            if($user != null) {
+                $userId = $user->id;
+            } else {
+                //$this->session->set_flashdata('error', $username. 'username is not exist. Please pass correct username');
+                //$this->DirectReferralList();
+            }
+        } else {
+            //$this->session->set_flashdata('error', 'Wrong URL.');
+            //$this->DirectReferralList();
+        }
+        
         $details = $this->userModel->getPersonalDetails($userId);
         $details->name = $details->firstname.' '.$details->middlename.' '.$details->lastname;
 
@@ -295,5 +392,107 @@ class User extends CI_Controller
             $this->session->set_flashdata('error', 'New password and confirm password is not matched.');
         }
         redirect('User/updatePassword');
+    }
+
+    public function DirectReferralList() {
+        $user_id = $this->session->userdata("user_id");
+        $DirectReferralList = $this->userModel->getDirectReferralList($user_id);
+        foreach ($DirectReferralList as $DirectReferral) {
+            $DirectReferral->name = $DirectReferral->firstname.' '.$DirectReferral->middlename.' '.$DirectReferral->lastname;
+        }
+        $data['DirectReferralList'] = $DirectReferralList;
+        $this->load->view('User/DirectReferralList', $data);
+    }
+
+    public function LeftGroupList() {
+        $user_id = $this->session->userdata("user_id");
+        $userIdList = array();
+        $userList = $this->userModel->getAllChildsByPlacementIdAndSide($user_id, 'left');
+        foreach ($userList as $user) {
+            array_push($userIdList, $user->id);
+        }
+        $userArrStr = implode(", ", $userIdList);
+        $LeftGroupList = $this->userModel->getGroupListByUserList($userArrStr);
+        foreach ($LeftGroupList as $leftGroupUser) {
+            $leftGroupUser->name = $leftGroupUser->firstname.' '.$leftGroupUser->middlename.' '.$leftGroupUser->lastname;
+        }
+        $data['LeftGroupList'] = $LeftGroupList;
+        $this->load->view('User/LeftGroupList', $data);
+    }
+
+    public function RightGroupList() {
+        $user_id = $this->session->userdata("user_id");
+        $userIdList = array();
+        $userList = $this->userModel->getAllChildsByPlacementIdAndSide($user_id, 'right');
+        foreach ($userList as $user) {
+            array_push($userIdList, $user->id);
+        }
+        $userArrStr = implode(", ", $userIdList);
+        $rightGroupList = $this->userModel->getGroupListByUserList($userArrStr);
+        foreach ($rightGroupList as $rightGroupUser) {
+            $rightGroupUser->name = $rightGroupUser->firstname.' '.$rightGroupUser->middlename.' '.$rightGroupUser->lastname;
+        }
+        $data['rightGroupList'] = $rightGroupList;
+        $this->load->view('User/rightGroupList', $data);
+    }
+
+    public function LevelWiseList() {
+        $user_id = $this->session->userdata("user_id");
+        $duplicateLevelArr = array();
+        $userList = $this->userModel->getUserByPlacementId($user_id);
+        $user = $this->userModel->getUser($user_id);
+        if ($user != null) {
+            array_push($userList, $user);
+        }
+        foreach ($userList as $user) {
+            $level = $this->userModel->getUserLevelByUserId($user_id, $user->id);
+            if($level != null) {
+                array_push($duplicateLevelArr, $level);
+            }
+        }
+        $uniqueValueCount = array_count_values($duplicateLevelArr);
+        
+        ksort($uniqueValueCount);
+
+        $data['levelCountList'] = $uniqueValueCount;
+        $this->load->view('User/LevelCountList', $data);
+    }
+
+    public function ViewUsers() {
+        $user_id = $this->session->userdata("user_id");
+        $level = 1;
+        $userIdList = array();
+        $userListByLevel = array();
+
+        if(isset($_GET['level'])) {
+            $level = $_GET['level'];
+        }
+        
+        $userList = $this->userModel->getUserByPlacementId($user_id);
+        $user = $this->userModel->getUser($user_id);
+        if ($user != null) {
+            array_push($userList, $user);
+        }
+
+        foreach ($userList as $user) {
+            $userLevel = $this->userModel->getUserLevelByUserId($user_id, $user->id);
+            if($userLevel != null && $userLevel == $level) {
+                array_push($userIdList, $user->id);
+            }
+        }
+
+        $userArrStr = implode(", ", $userIdList);
+
+
+        if($userArrStr !== '') {
+            $userListByLevel = $this->userModel->getGroupListByUserList($userArrStr);
+            foreach ($userListByLevel as $singleUser) {
+                $singleUser->name = $singleUser->firstname.' '.$singleUser->middlename.' '.$singleUser->lastname;
+            }
+        }
+
+        $data['userListByLevel'] = $userListByLevel;
+        $data['PageHeading'] = 'Level '.$level.' Partner List';
+        $this->load->view('User/UserList', $data);
     }
 }

@@ -1,6 +1,6 @@
 <header class="main-header">
     <!-- Logo -->
-    <a href="index2.html" class="logo">
+    <a href="<?php echo base_url();?>User/Dashboard" class="logo">
       <!-- mini logo for sidebar mini 50x50 pixels -->
       <span class="logo-mini"><b>DP</b></span>
       <!-- logo for regular state and mobile devices -->
@@ -105,8 +105,8 @@
                 <ul class="treeview-menu">
                     <li><a href="<?php echo base_url();?>User/ShoppingFund"><i class="fa fa-circle-o"></i> Shopping Fund</a></li>
                     <li><a href="<?php echo base_url();?>User/ProfileSharingValue"><i class="fa fa-circle-o"></i> Profit Sharing Value</a></li>
-                    <li><a href="<?php echo base_url();?>User/DirectReferralIncome"><i class="fa fa-circle-o"></i> Direct Referral Income</a></li>
-                    <li><a href="<?php echo base_url();?>User/BinaryIncome"><i class="fa fa-circle-o"></i> Binary Income</a></li>
+                    <li><a href="<?php echo base_url();?>User/DirectReferralIncome"><i class="fa fa-circle-o"></i> Invite Partner Income</a></li>
+                    <li><a href="<?php echo base_url();?>User/BinaryIncome"><i class="fa fa-circle-o"></i> Growth Partner Income</a></li>
                     <li><a href="<?php echo base_url();?>User/AutoPullMatrixIncome"><i class="fa fa-circle-o"></i> Auto Pool Matrix Income</a></li>
                     <li><a href="<?php echo base_url();?>User/MonthlySalaryIncome"><i class="fa fa-circle-o"></i> Monthly Salary Income</a></li>
                     <li><a href="<?php echo base_url();?>User/MonthlyFieldAllowance"><i class="fa fa-circle-o"></i> Monthly Field Allowance</a></li>
